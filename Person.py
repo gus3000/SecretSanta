@@ -32,12 +32,12 @@ class Person:
         for p in self.children:
             p.graph(graph)
             graph.edge(self.name, p.name)
-        if self.spouse:
+        if self.spouse and self.name < self.spouse.name:
             with graph.subgraph(name=f"cluster{self.name}-{self.spouse.name}") as subgraph:
-                subgraph.attr(rank="same", style="dotted")
+                subgraph.attr(rank="same", style="dotted", color="white")
                 subgraph.node(self.name)
                 subgraph.node(self.spouse.name)
-                # subgraph.edge(self.name, self.spouse.name, style="dotted")
+                subgraph.edge(self.name, self.spouse.name, constraint="false", arrowhead="none")
 
     def generation(self) -> int:
         if not self.parents:
@@ -45,7 +45,7 @@ class Person:
         return min([p.generation() for p in self.parents])
 
     @staticmethod
-    def from_csv(people_filename: str, children_filename: str, spouses_filename: str) -> Dict[str,'Person']:
+    def from_csv(people_filename: str, children_filename: str, spouses_filename: str) -> Dict[str, 'Person']:
         people = {}
         with open(people_filename, 'r') as f1, \
                 open(children_filename, 'r') as f2, \
@@ -69,14 +69,15 @@ class Person:
             for spouse1, spouse2 in spouse_csv:
                 people[spouse1].add_spouse(people[spouse2])
 
-        pprint(people)
+        # pprint(people)
         return people
 
 
-dot = Digraph("Richerd", format="png")
-# dot.attr()
-for p in Person.from_csv("data/people.csv", "data/children.csv", "data/spouses.csv").values():
-    if not p.parents:
-        p.graph(dot)
-pprint(dot.source)
-dot.render("tmp/richerd.gv", view=True)
+if __name__ == '__main__':
+    dot = Digraph("Richerd", format="png")
+    # dot.attr()
+    for p in Person.from_csv("data/people.csv", "data/children.csv", "data/spouses.csv").values():
+        if not p.parents:
+            p.graph(dot)
+    pprint(dot.source)
+    dot.render("tmp/richerd.gv", view=True)

@@ -1,1 +1,1 @@
-graphviz
+graphviz # you also need the graphviz binary on your machine (https://www.graphviz.org/download/)
