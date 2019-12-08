@@ -1,4 +1,5 @@
 import random
+import sys
 from typing import List
 
 from graphviz import Digraph
@@ -23,7 +24,7 @@ def gift_ok(p1: Person, p2: Person, forbidden_pairs=None) -> bool:
     return True
 
 
-def generate(people: List[Person], name, forbidden_pairs=None):
+def generate(people: List[Person], name, forbidden_pairs=None, n=0):
     ungifted = people.copy()
     random.shuffle(ungifted)
     gifted = [ungifted.pop()]
@@ -40,8 +41,12 @@ def generate(people: List[Person], name, forbidden_pairs=None):
                 found = True
                 break
         if not found:
-            print("sorry, I failed :c")
-            return
+            print("Trying again", file=sys.stderr)
+            return generate(people, name, forbidden_pairs, n + 1)
+
+    if not gift_ok(gifted[-1], gifted[0], forbidden_pairs):
+        print("Trying again", file=sys.stderr)
+        return generate(people, name, forbidden_pairs, n + 1)
 
     for i in range(-1, len(gifted) - 1):
         dot.edge(gifted[i].name, gifted[i + 1].name)
@@ -55,8 +60,10 @@ def generate(people: List[Person], name, forbidden_pairs=None):
     # print("ungifted :", ungifted)
     # print(gifted)
     dot.render(f"tmp/{name}.gv", view=True)
+    return True
 
 
 if __name__ == '__main__':
     people = Person.from_csv("data/people.csv", "data/children.csv", "data/spouses.csv")
-    generate(list(people.values()), f"Richerd_santa", [('Laurent', 'Joël')])
+    for i in range(10):
+        generate(list(people.values()), f"Richerd_santa_{i}", [('Laurent', 'Joël')])
